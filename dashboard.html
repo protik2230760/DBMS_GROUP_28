@@ -443,7 +443,68 @@
       // Add some sample markers (in a real app, these would come from your database)
       
     }
+    // Section-specific functions
+    function loadGradingStandards(searchTerm = '') {
+  let url = 'php/get_grading_standards.php';
+  if (searchTerm) {
+    url += `?search=${encodeURIComponent(searchTerm)}`;
+  }
 
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      const tableBody = document.querySelector('#gradingTable tbody');
+      tableBody.innerHTML = '';
+      
+      data.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.product_name || 'N/A'}</td>
+          <td>${item.description || 'N/A'}</td>
+          <td>${item.quality_score || 'N/A'}</td>
+          <td>${item.average_weight || 'N/A'}</td>
+          <td>${item.texture_quality || 'N/A'}</td>
+          <td>${item.date_of_grading || 'N/A'}</td>
+          <td>${item.cattle_id || 'N/A'}</td>
+          <td>${item.quantity || 'N/A'}</td>
+          <td>
+            <button class="btn btn-sm btn-warning" onclick="editGradingStandard(${item.grade_id})">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteGradingStandard(${item.grade_id})">Delete</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+      
+      // Populate product type dropdown
+      const productTypeSelect = document.getElementById('gradeProductType');
+      productTypeSelect.innerHTML = '<option value="">Select Product Type</option>';
+      const uniqueTypes = [...new Set(data.map(item => item.product_name))];
+      uniqueTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = type;
+        productTypeSelect.appendChild(option);
+      });
+      
+      // Load cattle IDs
+      loadCattleIds();
+    });
+}
+
+function loadCattleIds() {
+  fetch('php/get_cattle_ids.php')
+    .then(response => response.json())
+    .then(data => {
+      const cattleSelect = document.getElementById('gradeCattleId');
+      cattleSelect.innerHTML = '<option value="">Select Cattle ID</option>';
+      data.forEach(cattle => {
+        const option = document.createElement('option');
+        option.value = cattle.Cattle_ID;
+        option.textContent = `ID: ${cattle.Cattle_ID} (${cattle.Breed})`;
+        cattleSelect.appendChild(option);
+      });
+    });
+}
 
 
 
